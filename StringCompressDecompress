@@ -1,0 +1,10 @@
+/*
+  The COMPRESS and DECOMPRESS functions use the GZIP algorithm to compress and decompress the input, respectively. 
+  Both functions were introduced in SQL Server 2016.
+*/
+
+SELECT COMPRESS(N'This is my cv. Imagine it was much longer.');
+
+SELECT DECOMPRESS(COMPRESS(N'This is my cv. Imagine it was much longer.'));
+
+SELECT CAST(DECOMPRESS(COMPRESS(N'This is my cv. Imagine it was much longer.')) AS NVARCHAR(MAX));

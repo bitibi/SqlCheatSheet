@@ -1,0 +1,13 @@
+/*
+  Getting the previous/next items from the list based on the id (auto increment primary key)
+  
+  The prevous is the Max element in the ids that are < than the current id
+  
+  The next is the Min element in the ids that are > than the current id
+*/
+
+SELECT orderid, orderdate, empid, custid,
+  (SELECT MAX(O2.orderid)
+   FROM Sales.Orders AS O2
+   WHERE O2.orderid < O1.orderid) AS prevorderid
+FROM Sales.Orders AS O1;

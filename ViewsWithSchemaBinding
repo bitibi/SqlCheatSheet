@@ -1,0 +1,34 @@
+/*
+  If we define the WITH SCHEMABINDING option on the view, the object used in the view cannot be altered
+  
+  For example:
+*/
+
+ALTER VIEW Sales.USACusts WITH SCHEMABINDING
+AS
+
+SELECT
+  custid, companyname, contactname, contacttitle, address,
+  city, region, postalcode, country, phone, fax
+FROM Sales.Customers
+WHERE country = N'USA';
+GO
+
+/*
+  after this if we try to alter some of the columns used in the view:
+*/
+
+ALTER TABLE Sales.Customers DROP COLUMN address;
+
+/*
+  we will got an error:
+  
+  Msg 5074, Level 16, State 1, Line 346
+  The object 'USACusts' is dependent on column 'address'.
+  Msg 4922, Level 16, State 9, Line 346
+  ALTER TABLE DROP COLUMN address failed because one or more objects access this column.
+  
+  
+  IT IS HIGHLY RECOMMENDED TO USE TO AVOID ANY FURTHER ERRORS!
+*/
+

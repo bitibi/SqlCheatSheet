@@ -1,0 +1,76 @@
+/*
+  How to use the WITH CHECK option
+  
+  First create a test table
+*/
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TestTable](
+	[testId] [int] IDENTITY(1,1) NOT NULL,
+	[testText] [nvarchar](255) NOT NULL,
+	[testDate] [datetime] NOT NULL,
+ CONSTRAINT [PK_TestTable] PRIMARY KEY CLUSTERED 
+(
+	[testId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+SET IDENTITY_INSERT [dbo].[TestTable] ON 
+GO
+INSERT [dbo].[TestTable] ([testId], [testText], [testDate]) VALUES (1, N'first', CAST(N'2018-01-01T00:00:00.000' AS DateTime))
+GO
+INSERT [dbo].[TestTable] ([testId], [testText], [testDate]) VALUES (2, N'second', CAST(N'2018-01-02T00:00:00.000' AS DateTime))
+GO
+INSERT [dbo].[TestTable] ([testId], [testText], [testDate]) VALUES (3, N'third', CAST(N'2018-01-03T00:00:00.000' AS DateTime))
+GO
+INSERT [dbo].[TestTable] ([testId], [testText], [testDate]) VALUES (4, N'lastYear', CAST(N'2017-12-31T00:00:00.000' AS DateTime))
+GO
+SET IDENTITY_INSERT [dbo].[TestTable] OFF
+GO
+
+/* Create the view */
+
+
+CREATE VIEW [dbo].[TestView]
+AS
+SELECT        testId, testText, testDate
+FROM            dbo.TestTable
+WHERE        (testDate >= CONVERT(DATETIME, '2018-01-01 00:00:00', 102))
+GO
+
+
+/* 
+  Notice the filter on the view setting dates after 1.1.2018 
+  
+  Without the check option, you can insert data through the view regardless of the filter:
+*/
+INSERT INTO TestView (testText,testDate)
+VALUES (N'fourth','20171224')
+
+/* If we alter the view to set the CHECK option */
+
+
+ALTER VIEW [dbo].[TestView]
+WITH  VIEW_METADATA
+AS
+SELECT        testId, testText, testDate
+FROM            dbo.TestTable
+WHERE        (testDate >= CONVERT(DATETIME, '2018-01-01 00:00:00', 102))
+WITH CHECK OPTION
+GO
+
+/* If we try the to insert again: */
+
+INSERT INTO TestView (testText,testDate)
+VALUES (N'fourth','20171224')
+
+/* we got an error message: 
+  Msg 550, Level 16, State 1, Line 1
+  The attempted insert or update failed because the target view either specifies WITH CHECK OPTION or spans a view that specifies WITH CHECK OPTION and one or more rows resulting from the operation did not qualify under the CHECK OPTION constraint.
+  The statement has been terminated.
+*/
+
+
